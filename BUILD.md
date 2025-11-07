@@ -125,11 +125,11 @@ make deb
 You can pass additional arguments to dpkg-buildpackage:
 
 ```bash
-# Build for Debian Stretch (legacy example)
-make deb BUILD_ARGS=-Pstretch
-
 # Build with specific options
 make deb BUILD_ARGS="-us -uc -b"
+
+# Build unsigned packages (for testing)
+make deb BUILD_ARGS="-us -uc"
 ```
 
 ### Resulting Packages
@@ -148,7 +148,7 @@ After a successful build, you'll find these packages:
 - `elephant-shed-pgbackrest_*.deb` - pgBackRest integration
 - `elephant-shed-powa_*.deb` - PoWA integration
 - `elephant-shed-tmate_*.deb` - tmate integration
-- `elephant-shed-omnidb_*.deb` - OmniDB integration (not on Stretch)
+- `elephant-shed-omnidb_*.deb` - OmniDB integration
 
 ## Building RPM Packages
 
@@ -499,7 +499,11 @@ vagrant ssh
 ```bash
 # Add PostgreSQL repository
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+# Add repository key (modern method)
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+  sudo tee /etc/apt/trusted.gpg.d/postgresql.asc > /dev/null
+
 sudo apt-get update
 
 # Install with dependencies

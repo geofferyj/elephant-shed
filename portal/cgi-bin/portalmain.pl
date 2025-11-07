@@ -48,11 +48,24 @@ my $template = Template->new({
   POST_CHOMP => 1,
 });
 
+# Extract base domain from SERVER_NAME for subdomain routing
+my $server_name = $ENV{SERVER_NAME} || 'localhost';
+my $omnidb_subdomain = '';
+
+# Remove port number if present
+$server_name =~ s/:\d+$//;
+
+# Construct OmniDB subdomain URL
+# Use the same protocol as the current request
+my $protocol = ($ENV{HTTPS} && $ENV{HTTPS} eq 'on') ? 'https' : 'http';
+$omnidb_subdomain = "${protocol}://omnidb.${server_name}/";
+
 print "Content-type: text/html\n\n";
 
 $template->process('portalmain.html', {
   CLUSTERS => \@clusters,
   SERVER_NAME => $ENV{SERVER_NAME},
+  OMNIDB_SUBDOMAIN => $omnidb_subdomain,
   REMOTE_USER => $ENV{REMOTE_USER},
   TITLE => "Dashboard - PostgreSQL",
   HEADLINE => "PostgreSQL Appliance Dashboard",

@@ -34,6 +34,7 @@ Starting with this version, OmniDB is configured to run on a subdomain (e.g., `o
 
 2. **Apache Configuration**
    - Copy `portal/omnidb-subdomain.conf` to `/etc/apache2/sites-available/`
+   - **IMPORTANT**: Edit the configuration file and replace `omnidb.localhost` with your actual domain (e.g., `omnidb.yourdomain.com`)
    - Enable the site:
      ```bash
      sudo a2ensite omnidb-subdomain.conf
@@ -44,11 +45,14 @@ Starting with this version, OmniDB is configured to run on a subdomain (e.g., `o
      ```
 
 3. **SSL Certificate**
-   - For production, replace the self-signed certificate with a proper SSL certificate
+   - **CRITICAL**: Replace the self-signed certificate with a proper SSL certificate before deploying to production
    - Update the paths in `omnidb-subdomain.conf`:
      - `SSLCertificateFile`
      - `SSLCertificateKeyFile`
-   - Consider using Let's Encrypt for free SSL certificates
+   - Consider using Let's Encrypt for free SSL certificates:
+     ```bash
+     sudo certbot --apache -d omnidb.yourdomain.com
+     ```
 
 ### Local Development / Testing
 
@@ -111,3 +115,13 @@ If you're upgrading from a path-based OmniDB configuration:
 - **Authentication**: Uses the same `pwauth` authentication as the main portal
 - **Session Management**: OmniDB sessions are isolated to the subdomain
 - **Other Applications**: All other applications (Grafana, Prometheus, etc.) remain on path-based routing
+
+## Security Considerations
+
+1. **Host Header Validation**: The portal CGI script validates the SERVER_NAME environment variable using a strict regex pattern to prevent Host header injection attacks. Only valid domain names are accepted.
+
+2. **SSL Certificates**: The default configuration uses self-signed certificates which are only suitable for development. Always replace these with proper SSL certificates from a trusted CA for production deployments.
+
+3. **ServerName Configuration**: The Apache VirtualHost uses an explicit ServerName (not wildcard aliases) to prevent subdomain takeover attacks. Update the ServerName to match your specific domain.
+
+4. **Subdomain URL Construction**: The OmniDB subdomain URL is only constructed when SERVER_NAME passes validation. If validation fails, the template falls back to the path-based URL (/omnidb/).
